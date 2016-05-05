@@ -72,7 +72,7 @@
          :rating (if (nil? rating) (:rating row) rating)
          :ripped (if (nil? ripped) (:ripped row) ripped)))
 
-(defn update [selector-fn & {:keys [title artist rating ripped] :as attrs}]
+(defn update [selector-fn & {:as attrs}]
   (swap! db #(map (fn [row]
                       (if (selector-fn row)
                         (update-row row attrs)
@@ -82,15 +82,15 @@
 (defn delete [selector-fn]
   (swap! db (fn [db] (remove #(selector-fn %) db))))
 
-(defn make-comparision-expr [field value cd]
+(defn make-comparison-expr [field value cd]
   `(= (~field ~cd) ~value))
 
-(defn make-comparision-list [clauses cd]
-  (map #(make-comparision-expr (first %) (second %) cd) clauses))
+(defn make-comparison-list [clauses cd]
+  (map #(make-comparison-expr (first %) (second %) cd) clauses))
 
-(defmacro where [& {:keys [] :as clauses}]
+(defmacro where [& {:as clauses}]
   (let [cd (gensym "cd")]
-    `(fn [~cd] (and ~@(make-comparision-list clauses cd)))))
+    `(fn [~cd] (and ~@(make-comparison-list clauses cd)))))
 
 (defn -main
   "I don't do a whole lot ... yet."
