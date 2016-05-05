@@ -56,14 +56,14 @@
 (defn artist-selector [artist]
   #(= artist (:artist %)))
 
-(defn where [& {:keys [title artist rating ripped]
-                :as attrs}]
-  (fn [cd]
-    (and
-      (if title (= (:title cd) title) true)
-      (if artist (= (:artist cd) artist) true)
-      (if rating (= (:rating cd) rating) true)
-      (if ripped (= (:ripped cd) ripped) true))))
+;(defn where [& {:keys [title artist rating ripped]
+;                :as attrs}]
+;  (fn [cd]
+;    (and
+;      (if title (= (:title cd) title) true)
+;      (if artist (= (:artist cd) artist) true)
+;      (if rating (= (:rating cd) rating) true)
+;      (if ripped (= (:ripped cd) ripped) true))))
 
 (defn update-row [row {:keys [title artist rating ripped]}]
   (assoc row
@@ -81,6 +81,16 @@
 
 (defn delete [selector-fn]
   (swap! db (fn [db] (remove #(selector-fn %) db))))
+
+(defn make-comparision-expr [field value cd]
+  `(= (~field ~cd) ~value))
+
+(defn make-comparision-list [clauses cd]
+  (map #(make-comparision-expr (first %) (second %) cd) clauses))
+
+(defmacro where [& {:keys [] :as clauses}]
+  (let [cd (gensym "cd")]
+    `(fn [~cd] (and ~@(make-comparision-list clauses cd)))))
 
 (defn -main
   "I don't do a whole lot ... yet."
